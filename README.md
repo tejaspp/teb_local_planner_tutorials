@@ -13,3 +13,4 @@ Refer to the [teb_local_planner](http://wiki.ros.org/teb_local_planner) ROS wiki
  * *navigation stack* and *teb_local_planner* package
  * *stage*: `sudo apt-get install ros-indigo-stage-ros`
 
+# teb_local_planner_tutorials
