@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+
+
+<launch>
+
+    <arg name="robot_id" default="4"/>
+
+    <arg name="prefix"       default="robot$(arg robot_id)"/>
+    <arg name="topic_prefix" default="/$(arg prefix)"/>
+    <arg name="base_frame" default="$(arg prefix)/base_link" />
+    <arg name="map_frame"  default="map_laser2d"/>
+    <arg name="ppl_topic" default="$(arg topic_prefix)/people_tracker/positions"/>
+    <arg name="obstacle_msg" default="/move_base/TebLocalPlannerROS/obstacles"/>
+    <arg name="target_frame" default="map_laser2d"/>
+    <arg name="person_topic" default="$(arg topic_prefix)/perception/tracked_persons"/>
+
+    <include file="/home/tejas/teb_ws/src/teb_local_planner_tutorials/launch/move_base_teb.launch">
+	<arg name="robot_id" value="$(arg robot_id)"/>
+	<arg name="odom_topic" value="$(arg prefix)/odom_enc"/>
+	<arg name="cmd_vel_topic" value="$(arg topic_prefix)/control/controller/cmd_vel"/>
+	<arg name="map_frame" value="$(arg map_frame)"/>
+	<arg name="base_frame" value="$(arg base_frame)"/>
+    </include>
+
+    <node pkg="iliad_human_local_navigation" type="bayes_to_dynamic_obstacle.py" name="bayes_to_dynamic_obstacle">
+	<param name="ppl_topic" value="$(arg ppl_topic)"/>
+	<param name="obstacle_msg" value="$(arg obstacle_msg)"/>
+    </node>
+	
+    <node pkg="iliad_human_local_navigation" type="spencer_to_bayes.py" name="spencer_to_bayes">
+	<param name="person_topic" value="$(arg person_topic)"/>
+	<param name="target_frame" value="$(arg map_frame)"/>
+	<param name="ppl_topic" value="$(arg ppl_topic)"/>
+    </node>
+
+</launch> 

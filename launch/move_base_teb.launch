@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+
+<launch>
+      <arg name="robot_id" default="4"/>
+
+      <arg name="prefix"        default="robot$(arg robot_id)"/>
+      <arg name="topic_prefix"  default="/$(arg prefix)"/>
+
+      <arg name="odom_topic" default="$(arg prefix)/odom_enc" />
+      <arg name="cmd_vel_topic" default="$(arg topic_prefix)/control/controller/cmd_vel" />
+
+      <arg name="map_frame" default="map_laser2d" />
+      <arg name="base_frame" default="$(arg prefix)/base_link"/>
+
+      <!-- Filters out laser points hitting robot frame/wheels-->
+      <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser2d_floor_filter">
+        <rosparam command="load" file="$(find base_simulation)/params/safety_laser_filter.yaml" />
+        <remap from="scan" to="$(arg topic_prefix)/sensors/laser2d_floor" />
+        <remap from="scan_filtered" to="$(arg topic_prefix)/sensors/laser2d_floor_fil" />
+      </node>
+
+      <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser2d_top_filter">
+        <rosparam command="load" file="$(find base_simulation)/params/uol_nav_laser_filter.yaml" />
+        <remap from="scan" to="$(arg topic_prefix)/sensors/laser2d_top" />
+        <remap from="scan_filtered" to="$(arg topic_prefix)/sensors/laser2d_top_fil" />
+      </node>
+
+      <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+	<remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
+	<!--param name="cmd_vel_topic" value="$(arg cmd_vel_topic)"/-->
+	<remap from="odom" to="$(arg odom_topic)"/>
+	<!--param name="odom_topic" value="$(arg odom_topic)"/-->
+	<param name="map_frame" value="$(arg map_frame)"/>
+	<param name="base_frame" value="$(arg base_frame)"/>
+	<remap from="$(arg topic_prefix)/map" to="/maps/$(arg map_frame)"/>
+
+	<rosparam file="$(find nav_simulation)/params/costmap_common_params.yaml" command="load" ns="global_costmap" />
+	<rosparam file="$(find nav_simulation)/params/costmap_common_params.yaml" command="load" ns="local_costmap" />
+	<rosparam file="$(find nav_simulation)/params/local_costmap_params.yaml" command="load" />
+	<rosparam file="$(find nav_simulation)/params/global_costmap_params.yaml" command="load" />
+	<rosparam file="$(find nav_simulation)/params/teb_local_planner_params.yaml" command="load" />
+
+	<rosparam param="TebLocalPlannerROS/odom_topic" subst_value="True">$(arg odom_topic)</rosparam>
+
+	<rosparam param="local_costmap/obstacle_layer/nav_laser_scan_sensor/topic" subst_value="True">
+               $(arg topic_prefix)/sensors/laser2d_top_fil
+        </rosparam>
+	<rosparam param="local_costmap/obstacle_layer/safe_laser_scan_sensor/topic" subst_value="True">
+               $(arg topic_prefix)/sensors/laser2d_floor_fil
+        </rosparam>
+	<rosparam param="local_costmap/robot_base_frame" subst_value="True">
+               $(arg prefix)/base_link
+        </rosparam>
+
+	<rosparam param="global_costmap/obstacle_layer/nav_laser_scan_sensor/topic" subst_value="True">
+               $(arg topic_prefix)/sensors/laser2d_top_fil
+        </rosparam>
+	<rosparam param="global_costmap/obstacle_layer/safe_laser_scan_sensor/topic" subst_value="True">
+               $(arg topic_prefix)/sensors/laser2d_floor_fil
+        </rosparam>
+	<rosparam param="global_costmap/robot_base_frame" subst_value="True">
+               $(arg prefix)/base_link
+        </rosparam>
+
+	<param name="clearing_rotation_allowed" value="false" />
+	<param name="oscillation_timeout" value="10.0" />
+	<param name="oscillation_distance" value="0.25" />
+
+	<param name="base_global_planner" value="global_planner/GlobalPlanner" />
+	<param name="planner_frequency" value="1.0" />
+	<param name="planner_patience" value="5.0" />
+		
+	<param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
+	<param name="controller_frequency" value="5.0" />
+	<param name="controller_patience" value="15.0" />
+
+      </node>
+
+</launch>
