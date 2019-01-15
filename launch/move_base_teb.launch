@@ -41,6 +41,7 @@
 	<rosparam file="$(find nav_simulation)/params/teb_local_planner_params.yaml" command="load" />
 
 	<rosparam param="TebLocalPlannerROS/odom_topic" subst_value="True">$(arg odom_topic)</rosparam>
+	<rosparam param="TebLocalPlannerROS/map_frame" subst_value="True">$(arg map_frame)</rosparam>
 
 	<rosparam param="local_costmap/obstacle_layer/nav_laser_scan_sensor/topic" subst_value="True">
                $(arg topic_prefix)/sensors/laser2d_top_fil
@@ -49,7 +50,13 @@
                $(arg topic_prefix)/sensors/laser2d_floor_fil
         </rosparam>
 	<rosparam param="local_costmap/robot_base_frame" subst_value="True">
-               $(arg prefix)/base_link
+               $(arg base_frame)
+        </rosparam>
+	<rosparam param="local_costmap/global_frame" subst_value="True">
+               $(arg map_frame)
+        </rosparam>
+	<rosparam param="local_costmap/static_layer/map_topic" subst_value="True">
+               /maps/$(arg map_frame)
         </rosparam>
 
 	<rosparam param="global_costmap/obstacle_layer/nav_laser_scan_sensor/topic" subst_value="True">
@@ -59,7 +66,13 @@
                $(arg topic_prefix)/sensors/laser2d_floor_fil
         </rosparam>
 	<rosparam param="global_costmap/robot_base_frame" subst_value="True">
-               $(arg prefix)/base_link
+               $(arg base_frame)
+        </rosparam>
+	<rosparam param="global_costmap/global_frame" subst_value="True">
+               $(arg map_frame)
+        </rosparam>
+	<rosparam param="global_costmap/static_layer/map_topic" subst_value="True">
+               /maps/$(arg map_frame)
         </rosparam>
 
 	<param name="clearing_rotation_allowed" value="false" />
